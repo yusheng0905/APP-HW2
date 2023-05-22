@@ -136,7 +136,7 @@ class MainActivity : AppCompatActivity() {
 
                             //取得回應回來內容
                             runOnUiThread {
-                                println(textView2)
+                                println(textView2.text)
                             }
                         } else
                         {
