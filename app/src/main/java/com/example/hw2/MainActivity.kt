@@ -4,6 +4,7 @@ import android.content.Intent
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.text.method.ScrollingMovementMethod
 import android.util.Log
 import android.widget.Button
 import android.widget.ImageView
@@ -20,6 +21,9 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        var textView2 = findViewById<TextView>(R.id.textView2)
+        textView2.movementMethod= ScrollingMovementMethod.getInstance()
 
         //[POST]URL取得API Token
         val client0 = OkHttpClient()
@@ -76,122 +80,70 @@ class MainActivity : AppCompatActivity() {
                             println(responseBody)
 
                             val jsonObject = JSONObject(responseBody)
-                            var dataOfAll = String()
+
+                            textView2.text = ""
 
                             //取得查詢時間
                             val updateTime = jsonObject.get("UpdateTime")
                             var dataOfTime = "更新時間:"+updateTime.toString().substring(0,10)+" "+updateTime.toString().substring(11,19)
+                            textView2.append(dataOfTime)
 
                             //取得StationLiveBoards資料
                             val boardsArray = jsonObject.getJSONArray("StationLiveBoards")
 
-                            if (boardsArray.length()==0) {dataOfAll = dataOfTime+"\n\n_____________________\n\n"+"查無資料"}
+                            //若無資料
+                            if (boardsArray.length()==0) {textView2.append("\n\n_____________________\n\n"+"查無資料")}
 
 
-                            //若只有一筆資料
-                            else if (boardsArray.length()==1) {
-                                //取得StationLiveBoards的資料內容
-                                val boardsObject0 = boardsArray.getJSONObject(0)
-
-                                //取得boardsObject0結構
-                                val trainNo0 = boardsObject0.get("TrainNo")
-                                val trainType0 = boardsObject0.getJSONObject("TrainTypeName").get("Zh_tw")
-                                var direction0 = boardsObject0.get("Direction")
-                                if (direction0==0){direction0 = "北上"} else {direction0 = "南下"}
-
-                                val arrTime0 = boardsObject0.get("ScheduleArrivalTime")
-                                val depTime0 = boardsObject0.get("ScheduleDepartureTime")
-
-                                var delayTime0 = boardsObject0.get("DelayTime")
-                                if (delayTime0==0){delayTime0 = "準點"} else {delayTime0 = "誤點"+delayTime0+"分"}
-
-                                val endStation0 = boardsObject0.getJSONObject("EndingStationName").get("Zh_tw")
-
-                                val data0 = "車次:"+trainNo0+"\n車種:"+trainType0+"\n方向:"+direction0+"\n到站時間:"+arrTime0+"\n離站時間:"+depTime0+"\n狀態:"+delayTime0+"\n終點站:"+endStation0
-
-                                dataOfAll = dataOfTime+"\n\n_____________________\n\n"+data0
-                            }
-
-
-
-
-                            //2筆資料以上
+                            //若有資料
                             else {
                                 //取得StationLiveBoards的資料內容
-                                val boardsObject0 = boardsArray.getJSONObject(0)
-                                val boardsObject1 = boardsArray.getJSONObject(1)
+                                for (i in 0 until boardsArray.length()) {
+                                    val boardsObject = boardsArray.getJSONObject(i)
 
-                                //取得boardsObject0結構
-                                val trainNo0 = boardsObject0.get("TrainNo")
-                                val trainType0 = boardsObject0.getJSONObject("TrainTypeName").get("Zh_tw")
-                                var direction0 = boardsObject0.get("Direction")
-                                if (direction0 == 0) {
-                                    direction0 = "北上"
-                                } else {
-                                    direction0 = "南下"
+                                    //取得boardsObject結構
+                                    val trainNo = boardsObject.get("TrainNo")
+                                    val trainType =
+                                        boardsObject.getJSONObject("TrainTypeName").get("Zh_tw")
+                                    var direction = boardsObject.get("Direction")
+                                    if (direction == 0) {
+                                        direction = "北上"
+                                    } else {
+                                        direction = "南下"
+                                    }
+
+                                    val arrTime = boardsObject.get("ScheduleArrivalTime")
+                                    val depTime = boardsObject.get("ScheduleDepartureTime")
+
+                                    var delayTime = boardsObject.get("DelayTime")
+                                    if (delayTime == 0) {
+                                        delayTime = "準點"
+                                    } else {
+                                        delayTime = "誤點" + delayTime + "分"
+                                    }
+
+                                    val endStation =
+                                        boardsObject.getJSONObject("EndingStationName").get("Zh_tw")
+
+                                    val data =
+                                        "車次:" + trainNo + "\n車種:" + trainType + "\n方向:" + direction + "\n到站時間:" + arrTime + "\n離站時間:" + depTime + "\n狀態:" + delayTime + "\n終點站:" + endStation
+
+                                    //直接將內容回傳給id名稱為textView2
+                                    textView2.append("\n\n_____________________\n\n" + data)
                                 }
-
-                                val arrTime0 = boardsObject0.get("ScheduleArrivalTime")
-                                val depTime0 = boardsObject0.get("ScheduleDepartureTime")
-
-                                var delayTime0 = boardsObject0.get("DelayTime")
-                                if (delayTime0 == 0) {
-                                    delayTime0 = "準點"
-                                } else {
-                                    delayTime0 = "誤點" + delayTime0 + "分"
-                                }
-
-                                val endStation0 =
-                                    boardsObject0.getJSONObject("EndingStationName").get("Zh_tw")
-
-                                val data0 =
-                                    "車次:" + trainNo0 + "\n車種:" + trainType0 + "\n方向:" + direction0 + "\n到站時間:" + arrTime0 + "\n離站時間:" + depTime0 + "\n狀態:" + delayTime0 + "\n終點站:" + endStation0
-
-                                //取得boardsObject1結構
-                                val trainNo1 = boardsObject1.get("TrainNo")
-                                val trainType1 = boardsObject1.getJSONObject("TrainTypeName").get("Zh_tw")
-                                var direction1 = boardsObject1.get("Direction")
-                                if (direction1 == 0) {
-                                    direction1 = "北上"
-                                } else {
-                                    direction1 = "南下"
-                                }
-
-                                val arrTime1 = boardsObject1.get("ScheduleArrivalTime")
-                                val depTime1 = boardsObject1.get("ScheduleDepartureTime")
-
-                                var delayTime1 = boardsObject1.get("DelayTime")
-                                if (delayTime1 == 0) {
-                                    delayTime1 = "準點"
-                                } else {
-                                    delayTime1 = "誤點" + delayTime1 + "分"
-                                }
-
-                                val endStation1 =
-                                    boardsObject1.getJSONObject("EndingStationName").get("Zh_tw")
-
-                                val data1 =
-                                    "車次:" + trainNo1 + "\n車種:" + trainType1 + "\n方向:" + direction1 + "\n到站時間:" + arrTime1 + "\n離站時間:" + depTime1 + "\n狀態:" + delayTime1 + "\n終點站:" + endStation1
-
-                                dataOfAll = dataOfTime+"\n\n_____________________\n\n"+data0+"\n\n_____________________\n\n"+data1
-
                             }
 
 
                             //取得回應回來內容
                             runOnUiThread {
-                                //直接將內容回傳給id名稱為textView2
-                                findViewById<TextView>(R.id.textView2).text = dataOfAll
-
-
-
+                                println(textView2)
                             }
                         } else
                         {
                             println("Request failed")
                             runOnUiThread {
                                 //直接將內容回傳給id名稱為textView2
-                                findViewById<TextView>(R.id.textView2).text = "資料錯誤"
+                                textView2.text = "資料錯誤"
                             }
 
                         }
@@ -201,16 +153,9 @@ class MainActivity : AppCompatActivity() {
                 println("Request failed")
                 runOnUiThread {
                     //直接將內容回傳給id名稱為textView2
-                    findViewById<TextView>(R.id.textView2).text = "驗證錯誤"
+                    textView2.text = "驗證錯誤"
                 }
             }
         })
-
-
-
-
-
-
-
     }
 }
